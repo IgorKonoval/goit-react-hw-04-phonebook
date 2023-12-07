@@ -36,7 +36,7 @@ export const App = () => {
   };
 
   const filterContacts = event => {
-    setFilter(event.currentTarget.value);
+    setFilter(event.currentTarget.value.trim());
   };
 
   const getFilteredContacts = () => {
