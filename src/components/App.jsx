@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { nanoid } from 'nanoid';
 import toast, { Toaster } from 'react-hot-toast';
 import ContactForm from './Form/Form';
@@ -7,91 +7,79 @@ import { ContactList } from './ContactList/ContactList';
 import Filter from './Filter/Filter';
 import { GlobalStyle } from './GlobalStyle';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
-
-  componentDidMount() {
+export const App = () => {
+  const [contacts, setContacts] = useState(() => {
     const savedContacts = localStorage.getItem('contacts');
     const parsedContacts = JSON.parse(savedContacts);
     if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
+      return parsedContacts;
     }
-  }
+    return [];
+  });
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
+  const [filter, setFilter] = useState('');
 
-  addContact = ({ name, number }) => {
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  const addContact = ({ name, number }) => {
     const contact = { id: nanoid(), name, number };
     if (
-      this.state.contacts.find(
+      contacts.find(
         contact => contact.name.toLowerCase() === name.toLowerCase()
       )
     ) {
       return toast.error(`${name} is already in contacts!`);
     }
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }));
+    setContacts(prevState => [contact, ...prevState]);
   };
 
-  filterContacts = event => {
-    this.setState({ filter: event.currentTarget.value });
+  const filterContacts = event => {
+    setFilter(event.currentTarget.value);
   };
 
-  getFilteredContacts = () => {
-    const { filter, contacts } = this.state;
+  const getFilteredContacts = () => {
     const filterLowCase = filter.toLowerCase();
     return contacts.filter(contact =>
       contact.name.toLocaleLowerCase().includes(filterLowCase)
     );
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const deleteContact = contactId => {
+    setContacts(prevState =>
+      prevState.filter(contact => contact.id !== contactId)
+    );
   };
 
-  render() {
-    const filteredContacts = this.getFilteredContacts();
+  const filteredContacts = getFilteredContacts();
 
-    return (
-      <Container>
-        <Title>Phonebook</Title>
-        <Section>
-          <SectionTitle>Add contact</SectionTitle>
-          <ContactForm onSubmit={this.addContact} />
-        </Section>
-        <Section>
-          <SectionTitle>Contacts</SectionTitle>
-          {this.state.contacts.length !== 0 ? (
-            <>
-              <Filter
-                value={this.state.filter}
-                onChange={this.filterContacts}
-              />
-              <ContactList
-                contacts={filteredContacts}
-                onDeleteBut={this.deleteContact}
-              />
-            </>
-          ) : (
-            <Message>
-              There are no contacts in your phonebook. Please add your first
-              contact!
-            </Message>
-          )}
-          <GlobalStyle />
-          <Toaster />
-        </Section>
-      </Container>
-    );
-  }
-}
+  return (
+    <Container>
+      <Title>Phonebook</Title>
+      <Section>
+        <SectionTitle>Add contact</SectionTitle>
+        <ContactForm onSubmit={addContact} />
+      </Section>
+      <Section>
+        <SectionTitle>Contacts</SectionTitle>
+        {contacts.length !== 0 ? (
+          <>
+            <Filter value={filter} onChange={filterContacts} />
+            <ContactList
+              contacts={filteredContacts}
+              onDeleteBut={deleteContact}
+            />
+          </>
+        ) : (
+          <Message>
+            There are no contacts in your phonebook. Please add your first
+            contact!
+          </Message>
+        )}
+        <GlobalStyle />
+        <Toaster />
+      </Section>
+    </Container>
+  );
+};

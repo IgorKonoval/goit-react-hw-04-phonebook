@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { Form, Field, FormGroup, ErrorMessage } from './Form.styled';
 
 const FormSchema = Yup.object().shape({
-  name: Yup.string().required('Name is required'),
+  name: Yup.string().trim().required('Name is required'),
   number: Yup.string().required('Number is required'),
 });
 
