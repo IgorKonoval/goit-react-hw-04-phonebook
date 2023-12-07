@@ -9,8 +9,7 @@ import { GlobalStyle } from './GlobalStyle';
 
 export const App = () => {
   const [contacts, setContacts] = useState(() => {
-    const savedContacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(savedContacts);
+    const parsedContacts = JSON.parse(localStorage.getItem('contacts'));
     if (parsedContacts) {
       return parsedContacts;
     }
@@ -23,7 +22,8 @@ export const App = () => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
 
-  const addContact = ({ name, number }) => {
+  const addContact = ({ name: nameTrim, number }) => {
+    const name = nameTrim.trim();
     const contact = { id: nanoid(), name, number };
     if (
       contacts.find(
@@ -32,7 +32,7 @@ export const App = () => {
     ) {
       return toast.error(`${name} is already in contacts!`);
     }
-    setContacts(prevState => [contact, ...prevState]);
+    setContacts(prevState => [...prevState, contact]);
   };
 
   const filterContacts = event => {
